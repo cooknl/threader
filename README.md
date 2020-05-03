@@ -1,6 +1,10 @@
 # threader
 Easy Twitter threads with Python.
 
+## This fork
+
+Replaces TwitterAPI dependency with tweepy
+
 ## Installation
 
 You can install threader with `pip`:
