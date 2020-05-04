@@ -105,3 +105,6 @@ ENV/
 
 # Sandbox
 sandbox.ipynb
+
+# VS Code
+.vscode/

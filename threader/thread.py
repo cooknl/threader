@@ -1,4 +1,3 @@
-from TwitterAPI import TwitterAPI
 from tqdm import tqdm
 from time import sleep
 
@@ -13,8 +12,8 @@ class Threader(object):
         ----------
         tweets : list of strings
             The tweets to send out
-        api : instance of TwitterAPI
-            An active Twitter API object using the TwitterAPI package.
+        api : instance of *a* Twitter API, such as tweepy
+            An active Twitter API object using a Twitter API package.
         user : string | None
             A user to include in the tweets. If None, no user will be
             included.
@@ -29,9 +28,6 @@ class Threader(object):
             Whether to include a thread count at the end of each tweet. E.g.,
             "4/" or "5x".
         """
-        # Check twitter API
-        if not isinstance(api, TwitterAPI):
-            raise ValueError('api must be an instance of TwitterAPI')
         self.api = api
 
         # Check tweet list
@@ -98,18 +94,37 @@ class Threader(object):
         # Now generate the tweets
         for ii, tweet in tqdm(enumerate(self.tweets)):
             # Create tweet and add metadata
-            params = {'status': tweet}
+
+            ## TwitterAPI code
+            # params = {'status': tweet}
+
+            ## tweepy code
+            params = {'status': tweet,
+                      'in_reply_to_status_id': None}
+
             if len(self.tweet_ids_) > 0:
                 params['in_reply_to_status_id'] = self.tweet_ids_[-1]
 
             # Send POST and get response
-            resp = self.api.request('statuses/update', params=params)
-            if 'errors' in resp.json().keys():
+
+            ## TwitterAPI code
+            # resp = self.api.request('statuses/update', params=params)
+            # if 'errors' in resp.json().keys():
+            #     raise ValueError('Error in posting tweets:\n{}'.format(
+            #         resp.json()['errors'][0]))
+            # self.responses_.append(resp)
+            # self.params_.append(params)
+            # self.tweet_ids_.append(resp.json()['id'])
+
+            ## tweepy code
+            resp = self.api.update_status(status = params['status'],
+                                          in_reply_to_status_id = params['in_reply_to_status_id'] )
+            if 'errors' in resp._json.keys():
                 raise ValueError('Error in posting tweets:\n{}'.format(
-                    resp.json()['errors'][0]))
+                    resp._json['errors'][0]))
             self.responses_.append(resp)
             self.params_.append(params)
-            self.tweet_ids_.append(resp.json()['id'])
+            self.tweet_ids_.append(resp.id)            
             if isinstance(self.wait, (float, int)):
                 sleep(self.wait)
         self.sent = True
